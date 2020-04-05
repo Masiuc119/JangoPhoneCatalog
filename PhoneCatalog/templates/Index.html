@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Справочник</title>
+</head>
+<body>
+<h1>Телефонный справочник</h1>
+{% if message %}
+    <p><strong>{{ message }}</strong></p>
+{% endif %}
+{% if latest_phoneCatalog %}
+    <table border="1">
+        {% for PhoneCatalog in latest_phoneCatalog %}
+            <tr>
+                <td>
+                    {{ PhoneCatalog.Name }}
+                </td>
+            <td>
+                    {{ PhoneCatalog.RegDate }}
+                </td>
+            <td>
+                    {{ PhoneCatalog.Address }}
+                </td>
+            <td>
+                    {{ PhoneCatalog.Phone }}
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+{% else %}
+    <p>Справочник пустой.</p>
+{% endif %}
+</body>
+</html>
