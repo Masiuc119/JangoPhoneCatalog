@@ -34,9 +34,11 @@ tr:nth-child(even) {
     </style>
 </head>
 <body>
-<h1>Телефонный справочник</h1>
+{% extends 'base.html' %}
+{% block main %}
+    <h4 class="card-title">Телефонный справочник</h4>
 {% if message %}
-    <p><strong>{{ message }}</strong></p>
+    <p class="alert alert-success"><strong>{{ message }}</strong></p>
 {% endif %}
 {% if latest_phoneCatalog %}
     <table border="1">
@@ -66,5 +68,6 @@ tr:nth-child(even) {
 {% else %}
     <p>Справочник пустой.</p>
 {% endif %}
+{% endblock %}
 </body>
 </html>
