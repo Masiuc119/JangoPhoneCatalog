@@ -9,4 +9,8 @@ urlpatterns = [
     url(r'^login/$', views.LoginFormView.as_view()),
     url(r'^logout/$', views.LogoutView.as_view()),
     url(r'^password-change/', views.PasswordChangeView.as_view()),
+    # отправка сообщения
+    url(r'^post/$', views.post, name='post/'),
+    url(r'^msg_list/$', views.msg_list, name='msg_list'),
+
 ]
