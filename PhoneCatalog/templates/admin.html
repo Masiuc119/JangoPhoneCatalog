@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin</title>
+</head>
+<body>
+{% extends 'base.html' %}
+{% block main %}
+    {% if user.is_staff %}
+        {% if message %}
+            <p class="alert alert-success">
+                <strong>{{ message }}</strong>
+            </p>
+        {% endif %}
+        <div class="card mb-3">
+        <div class="card-body">
+        <form action="../post_phoneCatalog/" method="post">
+            {% csrf_token %}
+            <h5>Добавить телефонный номер:</h5>
+            <div class="mb-3">
+                <input class="form-control"
+                       placeholder="Name text"
+                       name="name"
+                       required/>
+                <input class="form-control"
+                       placeholder="Address text"
+                       name="address"
+                       required/>
+                <input class="form-control"
+                       placeholder="Phone text"
+                       name="phone"
+                       required/>
+            </div>
+                <button class="btn btn-success">
+                    Save
+                </button>
+        </form>
+        </div>
+        </div>
+        <div class="card mb-3">
+        <div class="card-body">
+        <h4 class="card-title">Текущий справочник</h4>
+        {% if latest_phoneCatalog %}
+    <table border="1">
+    <tr>
+        <th>Имя</th>
+        <th>Дата создания</th>
+        <th>Адрес</th>
+        <th>Телефон</th>
+    </tr>
+        {% for PhoneCatalog in latest_phoneCatalog %}
+            <tr>
+                <td>
+                    {{ PhoneCatalog.Name }}
+                </td>
+            <td>
+                    {{ PhoneCatalog.RegDate }}
+                </td>
+            <td>
+                    {{ PhoneCatalog.Address }}
+                </td>
+            <td>
+                    {{ PhoneCatalog.Phone }}
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+{% else %}
+    <p>Справочник пустой.</p>
+{% endif %}
+        </div>
+        </div>
+    {% else %}
+        <h4>Access denied.</h4>
+    {% endif %}
+{% endblock %}
+</body>
+</html>

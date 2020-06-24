@@ -1,3 +1,5 @@
+from django.contrib.auth.models import User
+from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404, render, redirect
 
 from .models import PhoneCatalog
@@ -172,3 +174,112 @@ def msg_list(request):
                 '%d.%m.%Y %H:%M:%S'
             )
     return JsonResponse(json.dumps(res), safe=False)
+
+
+def admin(request):
+    message = None
+    if "message" in request.GET:
+        message = request.GET["message"]
+    # создание HTML-страницы по шаблону admin.html
+    # с заданными параметрами latest_riddles и message
+    return render(
+        request,
+        "admin.html",
+        {
+            "latest_phoneCatalog":
+                PhoneCatalog.objects.order_by('RegDate')[:5],
+            "message": message,
+        }
+    )
+
+
+def post_phoneCatalog(request):
+    # защита от добавления загадок неадминистраторами
+    author = request.user
+    if not (author.is_authenticated and author.is_staff):
+        return HttpResponseRedirect(app_url + "admin")
+    # добавление загадки
+    phn = PhoneCatalog()
+    phn.Name = request.POST['name']
+    phn.Address = request.POST['address']
+    phn.Phone = request.POST['phone']
+    phn.RegDate = datetime.now()
+    phn.save()
+    # цикл по всем пользователям
+    for i in User.objects.all():
+        # проверка, что текущий пользователь подписан - указал e-mail
+        if i.email != '':
+            send_mail(
+                # тема письма
+                'Новая запись',
+                # текст письма
+                'На портале появилась новая запись:\n' +
+                'http://localhost:8000/PhoneCatalog/' + '.',
+                # отправитель
+                'masiuc1.19.noreply@gmail.com',
+                # список получателей из одного получателя
+                [i.email],
+                # отключаем замалчивание ошибок,
+                # чтобы из видеть и исправлять
+                False
+            )
+
+    return HttpResponseRedirect(app_url)
+
+
+from django import forms
+from django.utils.translation import gettext, gettext_lazy as _
+# ...
+
+
+# класс, описывающий логику формы:
+# список заполняемых полей и их сохранение
+class SubscribeForm(forms.Form):
+    # поле для ввода e-mail
+    email = forms.EmailField(
+        label=_("E-mail"),
+        required=True,
+    )
+
+    # конструктор для запоминания пользователя,
+    # которому задается e-mail
+    def __init__(self, user, *args, **kwargs):
+        self.user = user
+        super().__init__(*args, **kwargs)
+
+    # сохранение e-mail
+    def save(self, commit=True):
+        self.user.email = self.cleaned_data["email"]
+        if commit:
+            self.user.save()
+        return self.user
+
+
+# класс, описывающий взаимодействие логики
+# со страницами веб-приложения
+class SubscribeView(FormView):
+    # используем класс с логикой
+    form_class = SubscribeForm
+    # используем собственный шаблон
+    template_name = 'subscribe.html'
+    # после подписки возвращаем на главную станицу
+    success_url = app_url
+
+    # передача пользователя для конструктора класса с логикой
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    # вызов логики сохранения введенных данных
+    def form_valid(self, form):
+        form.save()
+        return HttpResponseRedirect(self.success_url)
+
+
+# функция для удаления подписки (форма не нужна,
+# поэтому без классов, просто функция)
+def unsubscribe(request):
+    request.user.email = ''
+    request.user.save()
+    return HttpResponseRedirect(app_url)
